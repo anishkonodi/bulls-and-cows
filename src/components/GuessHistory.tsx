@@ -15,7 +15,7 @@ const GuessHistory: React.FC<GuessHistoryProps> = ({ history, title }) => {
   return (
     <div className="bg-white p-2 sm:p-6 rounded-xl shadow-sm border border-slate-100 flex flex-col h-full min-h-0">
       <h3 className="text-sm sm:text-lg font-semibold text-slate-800 mb-2 sm:mb-4 shrink-0">{title} History</h3>
-      <div className="overflow-x-auto overflow-y-auto flex-1 min-h-0">
+      <div className="overflow-x-auto overflow-y-auto sm:overflow-y-visible flex-1 min-h-0">
         <table className="w-full text-left text-xs sm:text-sm">
           <thead className="bg-slate-50 text-slate-500 uppercase text-[10px] sm:text-xs font-semibold sticky top-0 z-10">
             <tr>

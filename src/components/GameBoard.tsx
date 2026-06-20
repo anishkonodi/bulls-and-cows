@@ -124,7 +124,7 @@ const GameBoard: React.FC = () => {
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-50 p-2 sm:p-0 pt-6 sm:pt-0 sm:static sm:z-auto sm:bg-transparent flex flex-col h-[100dvh] sm:h-[600px] lg:h-[700px] animate-in fade-in duration-500 gap-2 sm:gap-8">
+    <div className="fixed inset-0 z-50 bg-slate-50 p-2 sm:p-0 pt-6 sm:pt-0 sm:static sm:z-auto sm:bg-transparent flex flex-col h-[100dvh] sm:h-auto lg:h-auto animate-in fade-in duration-500 gap-2 sm:gap-8">
       {/* Game controls header */}
       <div className="flex items-center shrink-0">
         <button onClick={restartGame} className="text-xs sm:text-sm font-semibold text-slate-500 hover:text-red-600 transition-colors flex items-center gap-1 bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">
