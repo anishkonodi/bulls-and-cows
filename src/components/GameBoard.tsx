@@ -22,25 +22,47 @@ const GameBoard: React.FC = () => {
   const [setupError, setSetupError] = useState('');
 
   const systemAI = useRef<SystemPlayer | null>(null);
+  const startTimeRef = useRef<number | null>(null);
 
   // Initialize game
   const startGame = () => {
     const sysSecret = generateSecretNumber();
+    console.log('System Secret Number:', sysSecret);
     setSystemSecret(sysSecret);
     systemAI.current = new SystemPlayer();
     setStage('PLAYING');
     setTurn('USER');
     setSetupError('');
+    startTimeRef.current = Date.now();
   };
 
-  const handleUserGuess = (guess: string) => {
+  const handleUserGuess = async (guess: string) => {
     const result = calculateBullsAndCows(systemSecret, guess);
     const newRecord: GuessRecord = { guess, ...result };
-    setUserHistory([...userHistory, newRecord]);
+    const updatedUserHistory = [...userHistory, newRecord];
+    setUserHistory(updatedUserHistory);
 
     if (result.positions === 4) {
       setWinner('USER');
       setStage('FINISHED');
+
+      // Complete game session in DB
+      if (startTimeRef.current) {
+        const durationSeconds = Math.floor((Date.now() - startTimeRef.current) / 1000);
+        fetch('/api/game/complete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            isWinner: true,
+            durationSeconds,
+            guesses: updatedUserHistory.map(h => ({
+              guess: h.guess,
+              bulls: h.positions,
+              cows: h.digits,
+            })),
+          }),
+        }).catch((err) => console.error('Failed to complete game session in database:', err));
+      }
     } else {
       setTurn('SYSTEM');
     }
@@ -58,7 +80,7 @@ const GameBoard: React.FC = () => {
     }
   }, [stage, turn, currentSystemGuess]);
 
-  const handleSystemFeedback = (positions: number, digits: number) => {
+  const handleSystemFeedback = async (positions: number, digits: number) => {
     if (!currentSystemGuess) return;
 
     if (systemAI.current) {
@@ -81,6 +103,24 @@ const GameBoard: React.FC = () => {
     if (positions === 4) {
       setWinner('SYSTEM');
       setStage('FINISHED');
+
+      // Complete game session in DB (User lost to System)
+      if (startTimeRef.current) {
+        const durationSeconds = Math.floor((Date.now() - startTimeRef.current) / 1000);
+        fetch('/api/game/complete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            isWinner: false,
+            durationSeconds,
+            guesses: userHistory.map(h => ({
+              guess: h.guess,
+              bulls: h.positions,
+              cows: h.digits,
+            })),
+          }),
+        }).catch((err) => console.error('Failed to complete game session in database:', err));
+      }
     } else {
       setCurrentSystemGuess(null);
       setTurn('USER');
@@ -95,6 +135,7 @@ const GameBoard: React.FC = () => {
     setWinner(null);
     setCurrentSystemGuess(null);
     systemAI.current = null;
+    startTimeRef.current = null;
   };
 
   if (stage === 'SETUP') {
@@ -105,7 +146,7 @@ const GameBoard: React.FC = () => {
         </div>
         <h2 className="text-3xl font-black text-slate-800 mb-4">Ready to Play?</h2>
         <p className="text-slate-500 mb-8 leading-relaxed">
-          Think of a <span className="font-bold text-slate-700">4-digit secret number</span> (e.g., 5555 or 4038).
+          Think of a <span className="font-bold text-slate-700">4-digit secret number</span> (repeating digits are allowed, e.g., 2204 or 4038).
           Keep it in your mind or write it down.
         </p>
         <div className="space-y-4">

@@ -1,0 +1,96 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id              String   @id @default(cuid())
+
+  googleId        String?  @unique
+  email           String   @unique
+
+  name            String?
+  firstName       String?
+  lastName        String?
+  profilePicture  String?
+
+  emailVerified   Boolean  @default(false)
+
+  ipAddress       String?
+  userAgent       String?
+
+  browser         String?
+  operatingSystem String?
+  deviceType      String?
+
+  country         String?
+  region          String?
+  city            String?
+  timezone        String?
+
+  gamesPlayed     Int      @default(0)
+  gamesWon        Int      @default(0)
+  totalAttempts   Int      @default(0)
+  bestAttempts    Int?
+
+  firstLoginAt    DateTime @default(now())
+  lastLoginAt     DateTime @default(now())
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  gameSessions    GameSession[]
+  auditLogs       AuditLog[]
+}
+
+model GameSession {
+  id              String   @id @default(cuid())
+
+  userId          String
+  user            User @relation(fields: [userId], references: [id])
+
+  attempts        Int      @default(0)
+  durationSeconds Int?
+
+  isCompleted     Boolean  @default(false)
+  isWinner        Boolean  @default(false)
+
+  startedAt       DateTime @default(now())
+  completedAt     DateTime?
+
+  guesses         Guess[]
+}
+
+model Guess {
+  id            String @id @default(cuid())
+
+  sessionId     String
+  session       GameSession @relation(fields: [sessionId], references: [id])
+
+  guessedNumber String
+
+  bulls         Int
+  cows          Int
+
+  createdAt     DateTime @default(now())
+}
+
+model AuditLog {
+  id          String @id @default(cuid())
+
+  userId      String?
+  user        User? @relation(fields: [userId], references: [id])
+
+  action      String
+
+  ipAddress   String?
+  userAgent   String?
+
+  metadata    Json?
+
+  createdAt   DateTime @default(now())
+}
