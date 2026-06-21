@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export interface ApiErrorResponse {
   error: string;
-  details?: any;
+  details?: unknown;
 }
 
 /**
@@ -12,7 +12,7 @@ export interface ApiErrorResponse {
 export function apiError(
   message: string,
   status: number,
-  details?: any
+  details?: unknown
 ): NextResponse<ApiErrorResponse> {
   const isInternalError = status >= 500;
   const responseMessage = isInternalError ? 'Internal Server Error' : message;

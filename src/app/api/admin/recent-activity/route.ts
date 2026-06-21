@@ -6,7 +6,7 @@ import { checkRateLimit } from '@/src/lib/rateLimit';
 import { logAudit } from '@/src/lib/audit';
 import { headers } from 'next/headers';
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   const session = await auth();
   const reqHeaders = await headers();
   const ipAddress = reqHeaders.get('x-forwarded-for')?.split(',')[0] || reqHeaders.get('x-real-ip') || '127.0.0.1';

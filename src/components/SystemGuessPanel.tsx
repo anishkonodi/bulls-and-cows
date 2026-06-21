@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 interface SystemGuessPanelProps {
   systemGuess: string | null;
@@ -12,12 +12,7 @@ const SystemGuessPanel: React.FC<SystemGuessPanelProps> = ({ systemGuess, onFeed
   const [digits, setDigits] = useState<string>('');
   const [error, setError] = useState('');
 
-  // Reset inputs when system sends a new guess
-  useEffect(() => {
-    setPositions('');
-    setDigits('');
-    setError('');
-  }, [systemGuess]);
+
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,7 +40,7 @@ const SystemGuessPanel: React.FC<SystemGuessPanelProps> = ({ systemGuess, onFeed
   return (
     <div className={`p-3 sm:p-4 rounded-xl border-2 transition-all flex flex-col ${disabled ? 'bg-slate-50 border-slate-100 opacity-75' : 'bg-white border-orange-100 shadow-md shadow-orange-50'}`}>
       <div className="flex justify-between items-center mb-1 sm:mb-2 shrink-0">
-        <h3 className="text-base sm:text-xl font-bold text-slate-800">System's Turn</h3>
+        <h3 className="text-base sm:text-xl font-bold text-slate-800">System&apos;s Turn</h3>
         <span className="bg-orange-100 text-orange-700 text-[8px] sm:text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Opponent</span>
       </div>
       <p className="hidden sm:block text-slate-500 text-sm mb-3 shrink-0">The system is trying to guess your secret number.</p>

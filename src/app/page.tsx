@@ -5,6 +5,8 @@ import { prisma } from "../lib/prisma";
 
 import { env } from "../lib/env";
 
+export const dynamic = 'force-dynamic';
+
 export default async function Home() {
   const session = await auth();
   const user = session?.user;
@@ -186,7 +188,7 @@ export default async function Home() {
               <h4 className="font-bold text-slate-700 uppercase mb-4 tracking-wider text-center">How to Play</h4>
               <div className="space-y-4 text-slate-600">
                 <p className="leading-relaxed text-slate-500 text-center">
-                  Bulls and Cows is a classic turn-based code-breaking game. You compete against the System to crack each other's secret 4-digit number first.
+                  Bulls and Cows is a classic turn-based code-breaking game. You compete against the System to crack each other&apos;s secret 4-digit number first.
                 </p>
                 
                 <ul className="space-y-4">
@@ -201,7 +203,7 @@ export default async function Home() {
                     <span className="flex-shrink-0 w-6 h-6 rounded-full bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-600 font-bold text-xs">2</span>
                     <div>
                       <strong className="text-slate-700 block">Take Turns Guessing</strong>
-                      <span className="text-slate-500">You guess the System's secret number, and the System guesses yours. For every guess, clues are returned.</span>
+                      <span className="text-slate-500">You guess the System&apos;s secret number, and the System guesses yours. For every guess, clues are returned.</span>
                     </div>
                   </li>
                   <li className="flex gap-3">

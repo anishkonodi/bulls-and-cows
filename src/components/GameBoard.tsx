@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import UserGuessPanel from './UserGuessPanel';
 import SystemGuessPanel from './SystemGuessPanel';
 import GuessHistory, { GuessRecord } from './GuessHistory';
-import { generateSecretNumber, validateGuess, hasUniqueDigits } from '@/src/lib/numberUtils';
+import { generateSecretNumber } from '@/src/lib/numberUtils';
 import { calculateBullsAndCows } from '@/src/lib/gameLogic';
 import { SystemPlayer } from '@/src/lib/systemPlayer';
 
@@ -154,7 +154,7 @@ const GameBoard: React.FC = () => {
             onClick={startGame}
             className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-indigo-100 hover:scale-[1.02] active:scale-[0.98]"
           >
-            I've Selected My Number!
+            I&apos;ve Selected My Number!
           </button>
           <p className="text-[10px] text-slate-400 uppercase font-bold tracking-widest">
             System will also generate its secret number
@@ -194,7 +194,7 @@ const GameBoard: React.FC = () => {
           </p>
           <div className="flex flex-col items-center gap-2 sm:gap-4">
             <div className="text-xs sm:text-sm font-medium text-slate-500">
-              System's Secret Number was: <span className="font-mono text-slate-800 bg-slate-200 px-2 py-1 rounded">{systemSecret}</span>
+              System&apos;s Secret Number was: <span className="font-mono text-slate-800 bg-slate-200 px-2 py-1 rounded">{systemSecret}</span>
             </div>
             <button
               onClick={restartGame}
@@ -235,6 +235,7 @@ const GameBoard: React.FC = () => {
         <div className="flex flex-col gap-2 sm:space-y-6 h-full min-h-0">
           <div className="shrink-0">
             <SystemGuessPanel
+              key={currentSystemGuess || 'none'}
               systemGuess={currentSystemGuess}
               onFeedback={handleSystemFeedback}
               disabled={stage !== 'PLAYING' || turn !== 'SYSTEM'}

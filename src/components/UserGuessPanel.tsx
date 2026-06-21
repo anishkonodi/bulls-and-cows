@@ -33,7 +33,7 @@ const UserGuessPanel: React.FC<UserGuessPanelProps> = ({ onGuess, disabled, last
            </div>
         )}
       </div>
-      <p className="hidden sm:block text-slate-500 text-sm mb-2 sm:mb-3 shrink-0">Guess the system's secret 4-digit number.</p>
+      <p className="hidden sm:block text-slate-500 text-sm mb-2 sm:mb-3 shrink-0">Guess the system&apos;s secret 4-digit number.</p>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-2 sm:gap-3 flex-1">
         <div className="flex-1">

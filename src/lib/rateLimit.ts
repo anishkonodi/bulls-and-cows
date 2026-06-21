@@ -7,9 +7,9 @@ const rateLimitMap = new Map<string, RateLimitInfo>();
 // Run a periodic cleanup task to remove stale IP tracking blocks and prevent memory leaks.
 // Checking globalThis prevents multiple intervals in hot-reloading dev environments.
 if (typeof globalThis !== 'undefined') {
-  const global = globalThis as any;
-  if (!global.rateLimitCleanupInterval) {
-    global.rateLimitCleanupInterval = setInterval(() => {
+  const globalStore = globalThis as typeof globalThis & { rateLimitCleanupInterval?: NodeJS.Timeout };
+  if (!globalStore.rateLimitCleanupInterval) {
+    globalStore.rateLimitCleanupInterval = setInterval(() => {
       const now = Date.now();
       for (const [key, value] of rateLimitMap.entries()) {
         const activeTimestamps = value.timestamps.filter((t) => now - t < 60 * 1000);

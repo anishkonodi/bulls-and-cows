@@ -7,6 +7,7 @@ import { headers } from 'next/headers';
 import { userAgent } from 'next/server';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  trustHost: true,
   providers: [
     GoogleProvider({
       clientId: env.AUTH_GOOGLE_ID,

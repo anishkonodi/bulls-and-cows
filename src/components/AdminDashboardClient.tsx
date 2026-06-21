@@ -36,6 +36,7 @@ interface AuditLog {
   ipAddress: string | null;
   userAgent: string | null;
   createdAt: Date | string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata: any;
   user: {
     name: string | null;
@@ -115,6 +116,7 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const renderMetadata = (metadata: any, action: string) => {
     if (!metadata) return <span className="text-slate-400 italic">-</span>;
 

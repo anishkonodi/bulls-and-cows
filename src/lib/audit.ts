@@ -1,11 +1,12 @@
 import { prisma } from './prisma';
+import { Prisma } from '@prisma/client';
 
 export interface AuditLogOptions {
   userId?: string | null;
   action: string;
   ipAddress?: string | null;
   userAgent?: string | null;
-  metadata?: Record<string, any> | null;
+  metadata?: Prisma.InputJsonValue | null;
 }
 
 /**
@@ -20,9 +21,9 @@ export async function logAudit({
   metadata,
 }: AuditLogOptions) {
   try {
-    const sanitizedMetadata: Record<string, any> = {};
-    if (metadata) {
-      for (const [key, value] of Object.entries(metadata)) {
+    const sanitizedMetadata: Prisma.JsonObject = {};
+    if (metadata && typeof metadata === 'object' && !Array.isArray(metadata)) {
+      for (const [key, value] of Object.entries(metadata as Prisma.JsonObject)) {
         const lowKey = key.toLowerCase();
         if (
           lowKey.includes('token') ||

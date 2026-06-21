@@ -5,6 +5,12 @@ import AdminDashboardClient from '../../components/AdminDashboardClient';
 import Link from 'next/link';
 import { env } from '../../lib/env';
 
+function get24HoursAgo(): Date {
+  return new Date(Date.now() - 24 * 60 * 60 * 1000);
+}
+
+export const dynamic = 'force-dynamic';
+
 export default async function AdminDashboardPage() {
   const session = await auth();
 
@@ -66,7 +72,7 @@ export default async function AdminDashboardPage() {
     // Daily Active Users
     prisma.user.count({
       where: {
-        lastLoginAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
+        lastLoginAt: { gte: get24HoursAgo() },
       },
     }),
     
