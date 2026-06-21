@@ -27,7 +27,6 @@ const GameBoard: React.FC = () => {
   // Initialize game
   const startGame = () => {
     const sysSecret = generateSecretNumber();
-    console.log('System Secret Number:', sysSecret);
     setSystemSecret(sysSecret);
     systemAI.current = new SystemPlayer();
     setStage('PLAYING');
