@@ -3,25 +3,16 @@ import { auth } from '@/src/auth';
 import { prisma } from '@/src/lib/prisma';
 import { apiError } from '@/src/lib/apiErrors';
 import { checkRateLimit } from '@/src/lib/rateLimit';
-import { logAudit } from '@/src/lib/audit';
 import { headers } from 'next/headers';
 
 export async function GET(_req: NextRequest) {
   const session = await auth();
   const reqHeaders = await headers();
   const ipAddress = reqHeaders.get('x-forwarded-for')?.split(',')[0] || reqHeaders.get('x-real-ip') || '127.0.0.1';
-  const userAgent = reqHeaders.get('user-agent') || 'Unknown';
 
   // 1. Rate Limiting: Max 30 request per minute per IP
   const rateLimitResult = checkRateLimit(ipAddress, 30, 60 * 1000);
   if (!rateLimitResult.success) {
-    await logAudit({
-      userId: session?.user?.id,
-      action: 'RATE_LIMIT_VIOLATION',
-      ipAddress,
-      userAgent,
-      metadata: { endpoint: '/api/admin/leaderboard' },
-    });
     const response = apiError('Too Many Requests', 429);
     response.headers.set('X-RateLimit-Limit', rateLimitResult.limit.toString());
     response.headers.set('X-RateLimit-Remaining', '0');
@@ -40,13 +31,7 @@ export async function GET(_req: NextRequest) {
     .map((email) => email.trim().toLowerCase());
 
   if (!adminEmails.includes(session.user.email.toLowerCase())) {
-    await logAudit({
-      userId: session.user.id,
-      action: 'SUSPICIOUS_ACTIVITY',
-      ipAddress,
-      userAgent,
-      metadata: { reason: 'Unauthorized attempt to query admin leaderboard.' },
-    });
+    console.warn(`Unauthorized attempt to query admin leaderboard by ${session.user.email}`);
     return apiError('Forbidden', 403);
   }
 
@@ -72,7 +57,6 @@ export async function GET(_req: NextRequest) {
           select: {
             name: true,
             email: true,
-            profilePicture: true,
           },
         },
       },
@@ -88,3 +72,4 @@ export async function GET(_req: NextRequest) {
     return apiError('Internal Server Error', 500);
   }
 }
+

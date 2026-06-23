@@ -47,7 +47,7 @@ export default async function AdminDashboardPage() {
   }
 
   // 3. Parallel Server-side DB Queries
-  const [totalUsers, totalGames, totalWins, attemptsAgg, durationAgg, dailyActiveUsers, users, leaderboard, auditLogs] = await Promise.all([
+  const [totalUsers, totalGames, totalWins, attemptsAgg, durationAgg, dailyActiveUsers, users, leaderboard] = await Promise.all([
     // Total Users
     prisma.user.count(),
     
@@ -72,27 +72,22 @@ export default async function AdminDashboardPage() {
     // Daily Active Users
     prisma.user.count({
       where: {
-        lastLoginAt: { gte: get24HoursAgo() },
+        updatedAt: { gte: get24HoursAgo() },
       },
     }),
     
     // All Users Directory
     prisma.user.findMany({
-      orderBy: { lastLoginAt: 'desc' },
+      orderBy: { updatedAt: 'desc' },
       select: {
         id: true,
         email: true,
         name: true,
-        profilePicture: true,
-        browser: true,
-        operatingSystem: true,
-        deviceType: true,
-        country: true,
         gamesPlayed: true,
         gamesWon: true,
         totalAttempts: true,
         bestAttempts: true,
-        lastLoginAt: true,
+        updatedAt: true,
       },
     }),
     
@@ -113,27 +108,6 @@ export default async function AdminDashboardPage() {
         attempts: true,
         durationSeconds: true,
         startedAt: true,
-        user: {
-          select: {
-            name: true,
-            email: true,
-            profilePicture: true,
-          },
-        },
-      },
-    }),
-    
-    // Recent logs
-    prisma.auditLog.findMany({
-      orderBy: { createdAt: 'desc' },
-      take: 50,
-      select: {
-        id: true,
-        action: true,
-        ipAddress: true,
-        userAgent: true,
-        createdAt: true,
-        metadata: true,
         user: {
           select: {
             name: true,
@@ -161,7 +135,7 @@ export default async function AdminDashboardPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-slate-200">
           <div>
             <h1 className="text-3xl font-black text-slate-900 tracking-tight">Admin Dashboard</h1>
-            <p className="text-slate-500 text-sm mt-1">Manage users, audit system logs, and analyze game metrics.</p>
+            <p className="text-slate-500 text-sm mt-1">Manage users and analyze game metrics.</p>
           </div>
           <div className="flex items-center gap-3">
             <Link
@@ -178,8 +152,8 @@ export default async function AdminDashboardPage() {
           metrics={metrics}
           users={users}
           leaderboard={leaderboard}
-          auditLogs={auditLogs}
         />
+
 
       </div>
     </main>

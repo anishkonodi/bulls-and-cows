@@ -12,14 +12,8 @@ const SessionKeeper: React.FC = () => {
       if (now - lastPing > PING_INTERVAL) {
         lastPing = now;
         try {
-          const res = await fetch('/api/auth/session');
-          if (res.ok) {
-            const data = await res.json();
-            // NextAuth returns empty object {} when no session is active or expired
-            if (!data || Object.keys(data).length === 0) {
-              window.location.reload();
-            }
-          }
+          // Simply touch the session endpoint to extend active sessions. No reload on guests.
+          await fetch('/api/auth/session');
         } catch (err) {
           console.error('Session keep-alive failed:', err);
         }
@@ -36,29 +30,11 @@ const SessionKeeper: React.FC = () => {
     window.addEventListener('click', handleActivity);
     window.addEventListener('scroll', handleActivity);
 
-    // Periodic check to auto-logout inactive sessions even without user interaction
-    const checkSession = async () => {
-      try {
-        const res = await fetch('/api/auth/session');
-        if (res.ok) {
-          const data = await res.json();
-          if (!data || Object.keys(data).length === 0) {
-            window.location.reload();
-          }
-        }
-      } catch (err) {
-        console.error('Session check failed:', err);
-      }
-    };
-
-    const interval = setInterval(checkSession, 60 * 1000); // Check every minute
-
     return () => {
       window.removeEventListener('mousemove', handleActivity);
       window.removeEventListener('keydown', handleActivity);
       window.removeEventListener('click', handleActivity);
       window.removeEventListener('scroll', handleActivity);
-      clearInterval(interval);
     };
   }, []);
 
@@ -66,3 +42,4 @@ const SessionKeeper: React.FC = () => {
 };
 
 export default SessionKeeper;
+

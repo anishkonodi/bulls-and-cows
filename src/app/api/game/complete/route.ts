@@ -5,7 +5,6 @@ import { Prisma } from '@prisma/client';
 import { headers } from 'next/headers';
 import { z } from 'zod';
 import { apiError } from '@/src/lib/apiErrors';
-import { logAudit } from '@/src/lib/audit';
 import { checkRateLimit } from '@/src/lib/rateLimit';
 
 // Schema for input validation
@@ -30,22 +29,10 @@ export async function POST(req: NextRequest) {
   const userId = session.user.id;
   const reqHeaders = await headers();
   const ipAddress = reqHeaders.get('x-forwarded-for')?.split(',')[0] || reqHeaders.get('x-real-ip') || '127.0.0.1';
-  const userAgent = reqHeaders.get('user-agent') || 'Unknown';
 
   // 1. Rate Limiting: Max 20 submissions per minute per IP
   const rateLimitResult = checkRateLimit(ipAddress, 20, 60 * 1000);
   if (!rateLimitResult.success) {
-    await logAudit({
-      userId,
-      action: 'RATE_LIMIT_VIOLATION',
-      ipAddress,
-      userAgent,
-      metadata: {
-        endpoint: '/api/game/complete',
-        limit: rateLimitResult.limit,
-      },
-    });
-
     const response = apiError('Too Many Requests. Rate limit exceeded.', 429);
     response.headers.set('X-RateLimit-Limit', rateLimitResult.limit.toString());
     response.headers.set('X-RateLimit-Remaining', '0');
@@ -67,31 +54,12 @@ export async function POST(req: NextRequest) {
     // 3. Game state verification (tamper protection)
     const lastGuess = guesses[guesses.length - 1];
     if (isWinner && lastGuess.bulls !== 4) {
-      await logAudit({
-        userId,
-        action: 'SUSPICIOUS_ACTIVITY',
-        ipAddress,
-        userAgent,
-        metadata: {
-          reason: 'Mismatched game completion parameters: marked as winner but last guess is not 4 bulls.',
-          guessesCount: guesses.length,
-          lastGuess,
-        },
-      });
+      console.warn(`Game state conflict: user ${userId} marked as winner but last guess is not 4 bulls.`);
       return apiError('Game state conflict: Marked as winner but last guess was not correct.', 400);
     }
     
     if (!isWinner && guesses.some((g) => g.bulls === 4)) {
-      await logAudit({
-        userId,
-        action: 'SUSPICIOUS_ACTIVITY',
-        ipAddress,
-        userAgent,
-        metadata: {
-          reason: 'Mismatched game completion parameters: marked as loser but a guess had 4 bulls.',
-          guesses,
-        },
-      });
+      console.warn(`Game state conflict: user ${userId} marked as loser but a guess had 4 bulls.`);
       return apiError('Game state conflict: Marked as loser but a correct guess exists in history.', 400);
     }
 
@@ -152,55 +120,6 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      // 4. Create Audit Logs
-      // Log GAME_STARTED (to preserve full audit sequence)
-      await tx.auditLog.create({
-        data: {
-          userId,
-          action: 'GAME_STARTED',
-          ipAddress,
-          userAgent,
-          metadata: {
-            sessionId: gameSession.id,
-          },
-        },
-      });
-
-      // Log each guess
-      for (const [index, g] of guesses.entries()) {
-        await tx.auditLog.create({
-          data: {
-            userId,
-            action: 'GUESS_SUBMITTED',
-            ipAddress,
-            userAgent,
-            metadata: {
-              sessionId: gameSession.id,
-              guess: g.guess,
-              bulls: g.bulls,
-              cows: g.cows,
-              attemptNumber: index + 1,
-            },
-          },
-        });
-      }
-
-      // Log GAME_COMPLETED
-      await tx.auditLog.create({
-        data: {
-          userId,
-          action: 'GAME_COMPLETED',
-          ipAddress,
-          userAgent,
-          metadata: {
-            sessionId: gameSession.id,
-            attempts: guesses.length,
-            duration: durationSeconds,
-            isWinner,
-          },
-        },
-      });
-
       return gameSession;
     });
 
@@ -214,3 +133,4 @@ export async function POST(req: NextRequest) {
     return apiError('Internal Server Error', 500);
   }
 }
+
